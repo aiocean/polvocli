@@ -14,6 +14,6 @@ WORKDIR /root/
 COPY --from=builder /build/cli /cli
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-CMD ["/cli"]
+CMD ["--help"]
 
 ENTRYPOINT ["/cli"]
