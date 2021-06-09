@@ -3,7 +3,6 @@ FROM golang:1.16.2 as builder
 WORKDIR /build
 
 COPY go.mod go.sum main.go ./
-COPY internal/ ./internal
 COPY cmd/ ./cmd
 
 ENV GOPRIVATE=pkg.aiocean.dev/*,github.com/aiocean/*
