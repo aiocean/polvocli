@@ -15,5 +15,5 @@ Nếu bạn muốn hỗ trợ version latest thì hãy update version latest và
 ## Usage
 
 ```
-polvocli version update --entrypoint_url https://abc.com/index.js
+polvocli version update --manifest_url https://abc.com/index.js --orn packages/header/versions/v1.0.14
 ```

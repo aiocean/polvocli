@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	"errors"
+	"encoding/json"
+	"fmt"
+	"io"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -17,11 +19,10 @@ var versionUpdateCmd = &cobra.Command{
 }
 
 func init() {
-	versionUpdateCmd.Flags().String("orn", "", "orn")
-	versionUpdateCmd.Flags().String("display_name", "", "version's display name")
-	versionUpdateCmd.Flags().String("git_ref", "", "git ref")
-	versionUpdateCmd.Flags().String("build_name", "", "build name")
-	versionUpdateCmd.Flags().String("entry_point_url", "", "Entry point url")
+	versionUpdateCmd.Flags().String("orn", "", "version orn")
+	versionUpdateCmd.Flags().String("name", "", "version name")
+	versionUpdateCmd.Flags().Uint32("weight", 0, "version's weight")
+	versionUpdateCmd.Flags().String("manifest_url", "", "Entry point url")
 
 	versionUpdateCmd.MarkFlagRequired("orn")
 }
@@ -41,51 +42,52 @@ func versionUpdateRun(cmd *cobra.Command, args []string) error {
 
 	request := &aiocean_polvo_v1.UpdateVersionRequest{
 		Version:    &aiocean_polvo_v1.Version{},
-		UpdateMask: &fieldmaskpb.FieldMask{},
+		FieldMask: &fieldmaskpb.FieldMask{},
 	}
 
 	if orn, err := cmd.Flags().GetString("orn"); err != nil {
 		return err
-	} else if orn == "" {
-		return errors.New("orn is required")
-	} else {
-		request.Version.Orn = orn
+	} else if orn != "" {
+		request.Orn = orn
 	}
 
-	if displayName, err := cmd.Flags().GetString("display_name"); err != nil {
+	if manifestUrl, err := cmd.Flags().GetString("manifest_url"); err != nil {
 		return err
-	} else if displayName != "" {
-		request.Version.DisplayName = displayName
-		request.UpdateMask.Paths = append(request.UpdateMask.Paths, "version.display_name")
+	} else if manifestUrl != "" {
+		request.Version.ManifestUrl = manifestUrl
+		if err := request.FieldMask.Append(request, "version.manifest_url"); err != nil {
+			return err
+		}
 	}
 
-	if gitRef, err := cmd.Flags().GetString("git_ref"); err != nil {
+	if weight, err := cmd.Flags().GetUint32("weight"); err != nil {
 		return err
-	} else if gitRef != "" {
-		request.Version.GitRef = gitRef
-		request.UpdateMask.Paths = append(request.UpdateMask.Paths, "version.git_ref")
+	} else if weight > 0{
+		request.Version.Weight = weight
+		if err := request.FieldMask.Append(request, "version.weight"); err != nil {
+			return err
+		}
 	}
 
-	if entryPointUrl, err := cmd.Flags().GetString("entry_point_url"); err != nil {
-		return err
-	} else if entryPointUrl != "" {
-		request.Version.EntryPointUrl = entryPointUrl
-		request.UpdateMask.Paths = append(request.UpdateMask.Paths, "version.entry_point_url")
-	}
-
-	if buildName, err := cmd.Flags().GetString("build_name"); err != nil {
-		return err
-	} else if buildName != "" {
-		request.Version.BuildName = buildName
-		request.UpdateMask.Paths = append(request.UpdateMask.Paths, "version.build_name")
-	}
-
-	response, err := client.UpdateVersion(cmd.Context(), request)
+	stream, err := client.UpdateVersion(cmd.Context(), request)
 	if err != nil {
 		return err
 	}
 
-	cmd.Println("Done: " + response.GetVersion().GetOrn())
+	for {
+		response, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
 
-	return nil
+		content, err := json.MarshalIndent(response.GetVersion(), " ", " ")
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(content))
+	}
 }

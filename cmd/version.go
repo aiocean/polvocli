@@ -11,6 +11,10 @@ var versionCmd = &cobra.Command{
 }
 
 func init() {
-	versionCmd.PersistentFlags().String("polvo_address", "polvo.aiocean.services:443", "Entry point url")
+	versionCmd.PersistentFlags().String("polvo_address", "127.0.0.1:8080", "Entry point url")
 	versionCmd.AddCommand(versionUpdateCmd)
+	versionCmd.AddCommand(versionListCmd)
+	versionCmd.AddCommand(versionCreateCmd)
+	versionCmd.AddCommand(versionDeleteCmd)
+	versionCmd.AddCommand(versionGetCmd)
 }
