@@ -6,15 +6,15 @@ COPY go.mod go.sum main.go ./
 COPY cmd/ ./cmd
 
 ENV GOPRIVATE=pkg.aiocean.dev/*,github.com/aiocean/*
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -v -o cli .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -v -o polvo .
 
 FROM scratch
 WORKDIR /root/
 
-COPY --from=builder /build/cli /bin/
+COPY --from=builder /build/polvo /bin/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENV PATH "$PATH:/bin"
 
 CMD ["--help"]
-ENTRYPOINT ["/bin/cli"]
+ENTRYPOINT ["/bin/polvo"]
