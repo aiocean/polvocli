@@ -11,9 +11,10 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -v -o cli .
 FROM scratch
 WORKDIR /root/
 
-COPY --from=builder /build/cli /cli
+COPY --from=builder /build/cli /bin/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-CMD ["--help"]
+ENV PATH "$PATH:/bin"
 
-ENTRYPOINT ["/cli"]
+CMD ["--help"]
+ENTRYPOINT ["/bin/cli"]
