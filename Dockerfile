@@ -11,10 +11,10 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -v -o polvo .
 FROM scratch
 WORKDIR /root/
 
-COPY --from=builder /build/polvo /bin/
+COPY --from=builder /build/polvo /bin/polvo
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENV PATH "$PATH:/bin"
 
-CMD ["--help"]
 ENTRYPOINT ["/bin/polvo"]
+CMD ["--help"]
