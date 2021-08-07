@@ -8,10 +8,10 @@ COPY cmd/ ./cmd
 ENV GOPRIVATE=pkg.aiocean.dev/*,github.com/aiocean/*
 RUN CGO_ENABLED=0 go build -ldflags="-s -w" -v -o polvo .
 
-FROM alpine
+FROM alpine:latest
 WORKDIR /root/
 
-COPY --from=builder /build/polvo /bin/polvo
+COPY --from=builder /build/polvo /bin/
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENV PATH "$PATH:/bin"
