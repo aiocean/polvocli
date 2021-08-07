@@ -12,6 +12,7 @@ FROM scratch
 WORKDIR /root/
 
 COPY --from=builder /build/polvo /bin/polvo
+COPY --from=builder /bin/bash /bin/bash
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENV PATH "$PATH:/bin"
